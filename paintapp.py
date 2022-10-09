@@ -3,7 +3,10 @@
 # Imports
 import sys
 import pygame
+import pygame_widgets
 import ctypes
+from pygame_widgets.slider import Slider
+from pygame_widgets.textbox import TextBox
 
 # Increas Dots Per inch so it looks sharper
 ctypes.windll.shcore.SetProcessDpiAwareness(True)
@@ -12,12 +15,16 @@ ctypes.windll.shcore.SetProcessDpiAwareness(True)
 pygame.init()
 fps = 300
 fpsClock = pygame.time.Clock()
-width, height = 640, 480
-screen = pygame.display.set_mode((width, height), pygame.RESIZABLE)
+window_width, window_height = 640, 480
+screen = pygame.display.set_mode((window_width, window_height), pygame.RESIZABLE)
 
 font = pygame.font.SysFont('Arial', 20)
 
 # Variables
+slider = Slider(screen, 50, 200, 250, 50, min=1, max=50, step=1)
+#output = TextBox(screen, 5, 300, 50, 50, fontSize=30)
+
+#output.disable()  # Act as label instead of textbox
 
 # Our Buttons will append themself to this list
 objects = []
@@ -84,7 +91,6 @@ class Button():
         ])
         screen.blit(self.buttonSurface, self.buttonRect)
 
-
 # Handler Functions
 
 # Changing the Color
@@ -93,6 +99,7 @@ def changeColor(color):
     drawColor = color
 
 # Changing the Brush Size
+#todo: create slider for brush size selection
 def changebrushSize(dir):
     global brushSize
     if dir == 'greater':
@@ -100,7 +107,12 @@ def changebrushSize(dir):
     else:
         brushSize -= brushSizeSteps
 
+def changebrushSize_slider(slider_value):
+    global brushSize
+    brushSize = slider_value
+
 # Save the surface to the Disk
+#todo: open file explorer to save in desired folder/filename select (give default still)
 def save():
     pygame.image.save(canvas, "canvas.png")
 
@@ -109,13 +121,16 @@ buttonWidth = 120
 buttonHeight = 35
 
 # Buttons and their respective functions.
+#todo: color picker palette
+#todo: different brush types
 buttons = [
     ['Black', lambda: changeColor([0, 0, 0])],
     ['White', lambda: changeColor([255, 255, 255])],
+    ['Red', lambda: changeColor([255, 0, 0])],
     ['Blue', lambda: changeColor([0, 0, 255])],
     ['Green', lambda: changeColor([0, 255, 0])],
-    ['Brush Larger', lambda: changebrushSize('greater')],
-    ['Brush Smaller', lambda: changebrushSize('smaller')],
+    # ['Brush Larger', lambda: changebrushSize('greater')],
+    # ['Brush Smaller', lambda: changebrushSize('smaller')],
     ['Save', save],
 ]
 
@@ -131,10 +146,24 @@ canvas.fill((255, 255, 255))
 # Game loop.
 while True:
     screen.fill((30, 30, 30))
-    for event in pygame.event.get():
+    events = pygame.event.get()
+    for event in events:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+
+    #? brush update
+    #output.setText(slider.getValue())
+    changebrushSize_slider(slider.getValue())
+    if(drawColor == [255, 255, 255]):
+        slider.colour = [0, 0, 0]
+        slider.handleColour = drawColor
+    else:
+        slider.handleColour = drawColor
+        slider.colour = [255, 255, 255]
+    pygame_widgets.update(events)
+    
+    
 
     # Drawing the Buttons
     for object in objects:
@@ -158,10 +187,11 @@ while True:
     pygame.draw.circle(
         screen,
         drawColor,
-        [100, 100],
+        [105, 105],
         brushSize,
     )
 
     pygame.display.flip()
+    
     fpsClock.tick(fps)
 
