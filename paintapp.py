@@ -47,7 +47,7 @@ BLACK = (0, 0, 0)
 # Initial color
 drawColor = BLACK
 
-
+IMAGE_LOADED =False
 DRAW_GRID_LINES = True
 
 
@@ -173,12 +173,18 @@ def changebrushSize_slider(slider_value):
 def save():
     pygame.image.save(canvas, "canvas.png")
 
+def load():
+    global IMAGE_LOADED
+    l_image = pygame.image.load_extended("canvas.png")
+    
+    IMAGE_LOADED = l_image
+
 # Button Variables.
 buttonWidth = 120
 buttonHeight = 35
 
 # Buttons and their respective functions.
-#todo: color picker palette
+# draw color picker palette call
 #todo: different brush types
 buttons = [
     # ['Black', lambda: changeColor([0, 0, 0])],
@@ -191,6 +197,7 @@ buttons = [
     # ['Brush Larger', lambda: changebrushSize('greater')],
     # ['Brush Smaller', lambda: changebrushSize('smaller')],
     ['Save', save],
+    ['Load', load],
 ]
 
 # Making the buttons
@@ -230,6 +237,14 @@ while True:
     # Draw the Canvas at the center of the screen
     x, y = screen.get_size()
     screen.blit(canvas, [x/2 - canvasSize[0]/2, y/2 - canvasSize[1]/2])
+    
+    
+    if(IMAGE_LOADED != False):
+        canvasRect = canvas.get_rect()
+        IMAGE_LOADED = pygame.transform.scale(IMAGE_LOADED, canvasRect.size)
+        canvas.blit(IMAGE_LOADED, canvasRect)
+        IMAGE_LOADED = False
+
     # Drawing with the mouse
     if pygame.mouse.get_pressed()[0]:
         mx, my = pygame.mouse.get_pos()
@@ -242,6 +257,7 @@ while True:
             [dx, dy],
             brushSize,
         )
+
     # Reference Dot
     pygame.draw.circle(
         screen,
