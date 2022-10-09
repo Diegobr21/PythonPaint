@@ -7,6 +7,7 @@ import pygame_widgets
 import ctypes
 from pygame_widgets.slider import Slider
 from pygame_widgets.textbox import TextBox
+from color_picker import *
 
 # Increas Dots Per inch so it looks sharper
 ctypes.windll.shcore.SetProcessDpiAwareness(True)
@@ -29,8 +30,7 @@ slider = Slider(screen, 50, 200, 250, 50, min=1, max=50, step=1)
 # Our Buttons will append themself to this list
 objects = []
 
-# Initial color
-drawColor = [0, 0, 0]
+
 
 # Initial brush size
 brushSize = 30
@@ -38,6 +38,18 @@ brushSizeSteps = 3
 
 # Drawing Area Size
 canvasSize = [800, 800]
+
+ROWS = COLS = 100
+PIXEL_SIZE = window_width // COLS
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Initial color
+drawColor = BLACK
+
+
+DRAW_GRID_LINES = True
+
 
 # Button Class
 class Button():
@@ -93,13 +105,58 @@ class Button():
 
 # Handler Functions
 
+#? Drawing with grid
+def init_grid(rows, cols, color):
+    grid = []
+
+    for i in range(rows):
+        grid.append([])
+        for _ in range(cols):
+            grid[i].append(color)
+
+    return grid
+
+def draw_grid(win, grid):
+    for i, row in enumerate(grid):
+        for j, pixel in enumerate(row):
+            pygame.draw.rect(win, pixel, (j * PIXEL_SIZE, i *
+                                          PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE))
+
+    if DRAW_GRID_LINES:
+        for i in range(ROWS + 1):
+            pygame.draw.line(win, BLACK, (0, i * PIXEL_SIZE),
+                             (canvasSize[0], i * PIXEL_SIZE))
+
+        for i in range(COLS + 1):
+            pygame.draw.line(win, BLACK, (i * PIXEL_SIZE, 0),
+                             (i * PIXEL_SIZE, canvasSize[0]))
+
+#? Color picker 
+
+def drawColorPicker(): 
+    global window_width, window_height, drawColor   
+    screen2 = pygame.display.set_mode((window_width, window_height), pygame.RESIZABLE)
+    screen2.fill((30, 30, 30))
+    picker = ColorPicker(screen2)
+    close, color_update = picker.run()
+    if(close):
+
+        print(color_update)
+
+        #pygame.quit()
+    drawColor = color_update
+
 # Changing the Color
 def changeColor(color):
     global drawColor
     drawColor = color
 
+def updateGrid():
+    global DRAW_GRID_LINES
+    DRAW_GRID_LINES = not(DRAW_GRID_LINES)
+
 # Changing the Brush Size
-#todo: create slider for brush size selection
+#Using slider now
 def changebrushSize(dir):
     global brushSize
     if dir == 'greater':
@@ -124,11 +181,13 @@ buttonHeight = 35
 #todo: color picker palette
 #todo: different brush types
 buttons = [
-    ['Black', lambda: changeColor([0, 0, 0])],
-    ['White', lambda: changeColor([255, 255, 255])],
-    ['Red', lambda: changeColor([255, 0, 0])],
-    ['Blue', lambda: changeColor([0, 0, 255])],
-    ['Green', lambda: changeColor([0, 255, 0])],
+    # ['Black', lambda: changeColor([0, 0, 0])],
+    # ['White', lambda: changeColor([255, 255, 255])],
+    # ['Red', lambda: changeColor([255, 0, 0])],
+    # ['Blue', lambda: changeColor([0, 0, 255])],
+    # ['Green', lambda: changeColor([0, 255, 0])],
+    ['Color', lambda: drawColorPicker()],
+    #['GridLines', lambda: updateGrid()],
     # ['Brush Larger', lambda: changebrushSize('greater')],
     # ['Brush Smaller', lambda: changebrushSize('smaller')],
     ['Save', save],
