@@ -7,6 +7,8 @@ import pygame_widgets
 import ctypes
 from pygame_widgets.slider import Slider
 from pygame_widgets.textbox import TextBox
+import tkinter
+import tkinter.filedialog
 from color_picker import *
 
 # Increas Dots Per inch so it looks sharper
@@ -49,7 +51,7 @@ drawColor = BLACK
 
 IMAGE_LOADED =False
 DRAW_GRID_LINES = True
-
+CHOOSING_COLOR = False
 
 # Button Class
 class Button():
@@ -131,20 +133,38 @@ def draw_grid(win, grid):
             pygame.draw.line(win, BLACK, (i * PIXEL_SIZE, 0),
                              (i * PIXEL_SIZE, canvasSize[0]))
 
+def prompt_file():
+    """Create a Tk file dialog and cleanup when finished"""
+    top = tkinter.Tk()
+    top.withdraw()  # hide window
+    file_name = tkinter.filedialog.askopenfilename(parent=top)
+    top.destroy()
+    return file_name
+
+def select_destination():
+    """Create a Tk file dialog and cleanup when finished"""
+    top = tkinter.Tk()
+    top.withdraw()  # hide window
+    file_name = tkinter.filedialog.asksaveasfilename(confirmoverwrite=True, defaultextension='.png')
+    top.destroy()
+    return file_name
+
 #? Color picker 
 
 def drawColorPicker(): 
-    global window_width, window_height, drawColor   
+    global window_width, window_height, drawColor, CHOOSING_COLOR
+    CHOOSING_COLOR = True 
     screen2 = pygame.display.set_mode((window_width, window_height), pygame.RESIZABLE)
     screen2.fill((30, 30, 30))
     picker = ColorPicker(screen2)
     close, color_update = picker.run()
     if(close):
-
+        
         print(color_update)
 
         #pygame.quit()
     drawColor = color_update
+    CHOOSING_COLOR = False 
 
 # Changing the Color
 def changeColor(color):
@@ -169,13 +189,16 @@ def changebrushSize_slider(slider_value):
     brushSize = slider_value
 
 # Save the surface to the Disk
-#todo: open file explorer to save in desired folder/filename select (give default still)
+#? open file explorer to save in desired folder/filename select (give default still)
 def save():
-    pygame.image.save(canvas, "canvas.png")
+    filename = select_destination()
+    pygame.image.save(canvas, filename)
 
+#? open file explorer to load from desired folder/filename
 def load():
     global IMAGE_LOADED
-    l_image = pygame.image.load_extended("canvas.png")
+    filename = prompt_file()
+    l_image = pygame.image.load_extended(filename)
     
     IMAGE_LOADED = l_image
 
@@ -246,7 +269,7 @@ while True:
         IMAGE_LOADED = False
 
     # Drawing with the mouse
-    if pygame.mouse.get_pressed()[0]:
+    if pygame.mouse.get_pressed()[0] and CHOOSING_COLOR == False:
         mx, my = pygame.mouse.get_pos()
         # Calculate Position on the Canvas
         dx = mx - x/2 + canvasSize[0]/2
